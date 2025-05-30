@@ -21,18 +21,18 @@ RUN \
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+
+# Activate pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV STANDALONE 1
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV STANDALONE=1
+ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+# Run migration and build
+RUN pnpm run db:migrate && pnpm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
