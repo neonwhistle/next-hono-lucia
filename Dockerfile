@@ -31,9 +31,6 @@ COPY . .
 ENV STANDALONE=1
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Run migration and build
-RUN pnpm run db:migrate && pnpm run build
-
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
